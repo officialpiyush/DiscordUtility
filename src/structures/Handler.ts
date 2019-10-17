@@ -1,6 +1,6 @@
 import { Dirs } from "../interfaces/dirs";
 import { readdir } from "fs";
-import { Collection } from "discord.js";
+import { Collection, Message } from "discord.js";
 import path from "path";
 /**
  * @param {Any} client - Pass in your Discord Client
@@ -10,7 +10,7 @@ export class Handler {
     commandFolder: string;
     eventFolder: string;
     prefix: string;
-    constructor(client: any, dirs: Dirs, prefix: string, runCommands: boolean) {
+    constructor(client: any, dirs: Dirs, prefix: string) {
         this.bot = client;
         this.commandFolder = dirs.commandFolder;
         this.eventFolder = dirs.eventFolder;
@@ -19,22 +19,21 @@ export class Handler {
         this.bot.commands = new Collection();
         this.bot.aliases = new Collection();
 
-        this.bot.on("message", async (message: any) => {
-            if (!runCommands) return;
-            if (!message.content.startsWith(this.prefix)) return;
+    }
+    async runCommand(message: Message) {
+        if (!message.content.startsWith(this.prefix)) return;
 
-            const args = message.content.slice(this.prefix.length).trim().split(/ +/g);
-            const cmd = args.shift().toLowerCase();
-            const command = this.getCommand(cmd) || this.getCommand(this.getAlias(cmd));
+        const args = message.content.slice(this.prefix.length).trim().split(/ +/g);
+        const cmd = args.shift()!.toLowerCase();
+        const command = this.getCommand(cmd) || this.getCommand(this.getAlias(cmd));
 
-            if (!command) return;
+        if (!command) return;
 
-            try {
-                await command.run(this.bot, message, args);
-            } catch (e) {
-                console.log(e);
-            };
-        });
+        try {
+            await command.run(this.bot, message, args);
+        } catch (e) {
+            console.log(e);
+        };
     }
     loadCommands(): this {
         readdir(this.commandFolder, (err, files) => {

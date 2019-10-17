@@ -1,4 +1,4 @@
-import { Message, Client } from "discord.js";
+import { Message, Client, Role } from "discord.js";
 import { Options } from "../interfaces/options";
 import { EventEmitter } from "events";
 
@@ -9,22 +9,84 @@ const formatString = (string: string, message: Message) => {
     .replace(/{channel_name}/g, message.channel.toString())
 }
 
-let users = [],
-  warnedUsers = [],
-  cachedMessages = [];
 
 /**
  * @param {Client} bot - Your Discord.Client;
- * @param {Options} options - Options: messageLimit, warnUser, deleteMessage, muteUser, maxSpam
+ * @param {Options} options
  */
 
-export class antiSpam extends EventEmitter {
-  client: Client;
-  constructor(client: Client, options: Options = { messageLimit: 3, maxSpam: 3, deleteMessage: true }) {
+export class AntiSpam extends EventEmitter {
+  warnedUsers: object[];
+  kickedUsers: object[];
+  cachedMessages: object[];
+  options: Options;
+  constructor(options: Options) {
     super();
-    this.client = client;
-    this.client.on("message", (message: Message) => {
+    if (!options) options = { muteUser: true, maxInterval: 5000, kickUser: true, banUser: true, ignoreBots: true, warnUser: true, deleteMessage: true, messageLimit: 3 }
+    if (!options.messageLimit) options.messageLimit = 3;
 
-    });
+    this.warnedUsers = [];
+    this.cachedMessages = [];
+    this.kickedUsers = [];
+    this.options = options;
+
+    this.warn = this.warn.bind(this);
+    this.ban = this.ban.bind(this);
+    this.kick = this.kick.bind(this);
+    this.clearCache = this.clearCache.bind(this);
+
+    setInterval(this.clearCache, this.options.maxInterval || 5000);
+  }
+  message(message: Message): void {
+    if (!message.member) throw Error("Unfetched member detected!");
+    if (message.author.id === message.client.user.id) return;
+    if (this.options.ignoreBots && message.author.bot) return;
+    if (this.options.ignoredGuilds && this.options.ignoredGuilds.includes(message.guild.id)) return;
+    if (this.options.ignoredRoles && this.options.ignoredRoles.some((role: string) => message.member.roles.has(role))) return;
+    if (this.options.ignoredUsers && this.options.ignoredUsers.includes(message.author.id)) return;
+
+    this.cachedMessages.push({ author: message.author.id });
+    const messages = this.cachedMessages.filter((x: any) => x.author === message.author.id).length;
+    const warned = this.warnedUsers.filter((x: any) => x.author === message.author.id);
+
+    if (messages >= this.options.messageLimit && warned[0]) return this.kick(message);
+    if (this.kickedUsers.filter((x: any) => x.author === message.author.id)[0] && messages >= 3) return this.ban(message);
+    if (!warned[0] && messages >= this.options.messageLimit) return this.warn(message);
+  }
+
+  warn = (message: Message): void => {
+    this.emit("warnAdd", message.member);
+    if (this.options.deleteMessage) message.delete();
+    this.warnedUsers.push({ author: message.author.id });
+
+    if (this.options.warnMessage)
+      message.channel.send(formatString(this.options.warnMessage, message)).then((msg: any) => msg.delete(5000));
+  }
+  ban = (message: Message): void => {
+    this.emit("banAdd", message.member);
+
+    if (this.options.deleteMessage) message.delete();
+
+    if (this.options.banMessage)
+      message.channel.send(formatString(this.options.banMessage, message))
+
+    message.member.ban("Spamming!");
+  }
+  kick = (message: Message): void => {
+    this.emit("kickAdd", message.member);
+
+    if (this.options.deleteMessage) message.delete();
+
+    this.kickedUsers.push({ author: message.author.id });
+    if (this.options.kickMessage)
+      message.channel.send(formatString(this.options.kickMessage, message)).then((msg: any) => msg.delete(5000))
+
+    message.member.kick("Spamming!");
+  }
+  clearCache = (): void => {
+    this.emit("reset");
+    this.kickedUsers = [];
+    this.warnedUsers = [];
+    this.cachedMessages = [];
   }
 };

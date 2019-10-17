@@ -5,7 +5,7 @@
 <a href="https://github.com/Devs-Meetup/DiscordUtility/blob/master/LICENSE" rel="nofollow"><img src="https://badgen.net/github/license/Devs-Meetup/discordutility" alt="license"></a>
 <br/>
 DiscordUtility is an utility Package that provides features, such as:
-
+- An AntiSpam System
 - An advanced command handler
 - A checkCurse Function
 - A convertMS Function
@@ -21,17 +21,21 @@ or if you use yarn
 yarn  add  discordutility
 ```
 ## Example
+Handler:
 ```js
 const { Client } = require("discord.js");
 const { Handler } = require("discordutility");
 const bot = new Client();
-bot.handler = new Handler(bot, { commandFolder: "commands", eventFolder: "events" }, "!", true);
+bot.handler = new Handler(bot, { commandFolder: "commands", eventFolder: "events" }, "!").loadCommands().loadEvents();
 ```
+checkCurse:
 ```js
 //Event Folder, message.js (events/message.js)
 const { checkCurse } = require("discordutility");
-module.exports = (bot, message) => {
+module.exports = (bot, message) => {	
 	if(checkCurse(message, true)) return message.reply("Do not swear >:(!");
+
+	bot.handler.runCommand(message);
 };
 ```
 ```js
@@ -44,8 +48,19 @@ run: (bot, message, args) => {
 	}
 }
 ```
-## In Progress
-- An antispam system
+AntiSpam:
+```js
+const { Client } = require("discord.js");
+const { AntiSpam } = require("discordutility");
+
+const bot = new Client();
+const antispam = new AntiSpam();
+
+bot.on("message", async(message) => {
+	if(!message.member) message.member = await message.guild.fetchMember(message.author);
+	antispam.message(message);
+})
+```
 ## Links
 -  [NPM](https://www.npmjs.com/package/discordutility)
 -  [Github](https://github.com/Devs-Meetup/DiscordUtility)
