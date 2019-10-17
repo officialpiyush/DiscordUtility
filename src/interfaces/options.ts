@@ -4,4 +4,4 @@ export interface Options{
     warnUser?: boolean;
     deleteMessage: boolean;
     muteUser?: boolean;
-}   
+}
