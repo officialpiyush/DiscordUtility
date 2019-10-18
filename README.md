@@ -58,7 +58,7 @@ const antispam = new AntiSpam();
 
 bot.on("message", async(message) => {
 	if(!message.member) message.member = await message.guild.fetchMember(message.author);
-	antispam.message(message);
+	antispam.checkSpam(message);
 })
 ```
 ## Links
