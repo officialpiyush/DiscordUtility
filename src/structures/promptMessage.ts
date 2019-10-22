@@ -2,7 +2,7 @@ import { Message } from "discord.js";
 /**
  * @param {Message} message - A Discord.js Message
  * @param {Number} time - The time to wait for a returned message
- * @returns {Promise<T>} 
+ * @returns {Promise<string>} 
  */
 export async function promptMessage(message: Message, time: number = 30000) {
     const filter = (m: Message) => m.author.id === message.author.id;
