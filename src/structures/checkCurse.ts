@@ -1,9 +1,9 @@
 import { Message } from "discord.js";
 /**
  * @param {Message} message - A Discord.js Message
- * @param {Boolean} [defaultWords=true]
- * @param {Array} extraWords
- * @returns {Boolean}
+ * @param {Boolean} [defaultWords=true] - Wheather use default curse words or not
+ * @param {Array<string>} [extraWords=[]] - An array of more cursed words, if you wana check for more.
+ * @returns {Boolean} - Returns true if the message contains cursed words, false if dosen't
  */
 export function checkCurse(message: Message, defaultWords: boolean = true, extraWords: string[]) {
     let swearWords: string[] = [];
