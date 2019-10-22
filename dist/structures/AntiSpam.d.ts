@@ -7,8 +7,8 @@ export declare class AntiSpam extends EventEmitter {
     options: Options;
     constructor(options: Options);
     checkSpam(message: Message): void;
-    warn: (message: Message) => void;
-    ban: (message: Message) => void;
-    kick: (message: Message) => void;
+    warn: (message: any) => void;
+    ban: (message: any) => void;
+    kick: (message: any) => void;
     clearCache: () => void;
 }

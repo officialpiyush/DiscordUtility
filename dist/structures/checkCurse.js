@@ -12,5 +12,6 @@ function checkCurse(message, defaultWords = true, extraWords) {
     const deserialized = message.content.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
     if (swearWords.some((swearWord) => deserialized.split(" ").includes(swearWord)))
         return true;
+    return false;
 }
 exports.checkCurse = checkCurse;
