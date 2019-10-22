@@ -11,8 +11,8 @@ const formatString = (toFormat: string, message: Message) => {
 
 
 /**
- * @param {Client} bot - Your Discord.Client;
- * @param {Options} options
+ * @param {Client} bot - Your Discord.Client.
+ * @param {Options} options - The Options for Antispam module.
  */
 
 export class AntiSpam extends EventEmitter {
